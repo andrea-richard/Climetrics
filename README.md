@@ -1,3 +1,1 @@
-Before running, run 'pip install adafruit-circuitpython-ahtx0'. 
-
-Cite: https://github.com/adafruit/Adafruit_CircuitPython_AHTx0/blob/main/examples/ahtx0_simpletest.py
+Simulated sensors in user interface format.
