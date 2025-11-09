@@ -63,6 +63,10 @@ class SHT35Sensor:
         self.humidity_history = []
         self.max_history = 10
         
+        # Simulation state for realistic gradual changes
+        self._sim_temp = None  # Current simulated temperature
+        self._sim_humidity = None  # Current simulated humidity
+        
         self._initialize()
     
     def _initialize(self):
@@ -274,16 +278,49 @@ class SHT35Sensor:
         """
         Simulate sensor readings for testing without hardware.
         
-        Returns realistic values with small variations.
+        Returns realistic values with gradual, smooth variations.
+        Uses mango storage targets: 11°C (52°F), 87.5% RH
+        Simulates realistic drift and small fluctuations like real sensors.
         """
         import random
+        import math
         
-        # Base values with small random variation
-        base_temp = 5.0
-        base_humidity = 90.0
+        # Base values for mango storage: 50-54°F (10-12.2°C), 85-90% RH
+        # Target: 11°C (52°F), 87.5% RH
+        base_temp = 11.0      # Mango optimal: 52°F
+        base_humidity = 87.5  # Mango optimal: 87.5% RH
         
-        temp = base_temp + random.uniform(-0.5, 0.5)
-        humidity = base_humidity + random.uniform(-2, 2)
+        # Initialize simulation state if first reading
+        if self._sim_temp is None:
+            self._sim_temp = base_temp + random.uniform(-0.2, 0.2)
+            self._sim_humidity = base_humidity + random.uniform(-1.0, 1.0)
+        
+        # Calculate drift towards target (realistic behavior - tends to stabilize)
+        temp_drift = (base_temp - self._sim_temp) * 0.1  # 10% correction per reading
+        humidity_drift = (base_humidity - self._sim_humidity) * 0.1
+        
+        # Add small random walk (realistic sensor noise)
+        # Use smaller increments for smoother changes
+        temp_noise = random.uniform(-0.05, 0.05)  # Very small random changes
+        humidity_noise = random.uniform(-0.2, 0.2)
+        
+        # Add slow periodic variation (simulates day/night or system cycles)
+        # Very subtle sine wave with long period
+        cycle_time = time.time() / 60.0  # Convert to minutes
+        temp_cycle = 0.1 * math.sin(cycle_time / 30.0)  # 30-minute cycle, ±0.1°C
+        humidity_cycle = 0.5 * math.sin(cycle_time / 45.0)  # 45-minute cycle, ±0.5% RH
+        
+        # Apply changes gradually
+        self._sim_temp += temp_drift + temp_noise + temp_cycle
+        self._sim_humidity += humidity_drift + humidity_noise + humidity_cycle
+        
+        # Clamp to realistic ranges (prevent unrealistic values)
+        temp = max(10.0, min(12.5, self._sim_temp))  # Keep within 10-12.5°C
+        humidity = max(84.0, min(91.0, self._sim_humidity))  # Keep within 84-91% RH
+        
+        # Update internal state
+        self._sim_temp = temp
+        self._sim_humidity = humidity
         
         self._update_history(temp, humidity)
         self.last_reading_time = time.time()

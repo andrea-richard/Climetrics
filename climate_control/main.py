@@ -318,8 +318,10 @@ class ClimateControlSystem:
         if self.dashboard:
             self.dashboard.run_background()
             dashboard_config = self.config.get('dashboard', {})
-            logger.info(f"Dashboard available at http://{dashboard_config.get('host', '0.0.0.0')}:"
-                       f"{dashboard_config.get('port', 5000)}")
+            port = dashboard_config.get('port', 5000)
+            logger.info(f"Dashboard available at http://localhost:{port}")
+            logger.info(f"  (Also accessible at http://127.0.0.1:{port})")
+            logger.info(f"  Note: Do NOT use http://0.0.0.0:{port} - that's the server binding address, not a client URL")
         
         # Main loop
         sensor_config = self.config.get('sensor', {})
@@ -400,10 +402,8 @@ def main():
     """Main entry point."""
     print("""
     ╔════════════════════════════════════════════════════════╗
-    ║     Climate Control System for Produce Trucks         ║
-    ║     Post-Harvest Food Loss Prevention                 ║
-    ║                                                        ║
-    ║     Tata-Cornell Food Challenge - MIT Hackathon       ║
+    ║     Climate Control System for Produce Trucks          ║
+    ║     Post-Harvest Food Loss Prevention                  ║
     ╚════════════════════════════════════════════════════════╝
     """)
     
