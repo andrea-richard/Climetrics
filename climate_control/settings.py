@@ -71,6 +71,7 @@ LOGGING_DATABASE_PATH = "climate_data.db"
 LOGGING_INTERVAL = 5                 # Seconds between log entries
 LOGGING_CSV_EXPORT_DIR = "exports"
 LOGGING_MAX_DB_SIZE_MB = 100        # Auto-cleanup when exceeded
+LOGGING_CLEAR_ON_STARTUP = True     # Clear database on startup (for development)
 
 # ============================================================================
 # DASHBOARD SETTINGS
@@ -78,7 +79,7 @@ LOGGING_MAX_DB_SIZE_MB = 100        # Auto-cleanup when exceeded
 
 DASHBOARD_ENABLED = True
 DASHBOARD_HOST = "0.0.0.0"          # Listen on all interfaces
-DASHBOARD_PORT = 5000
+DASHBOARD_PORT = 5001               # Changed from 5000 to avoid AirPlay Receiver conflict on macOS
 DASHBOARD_REFRESH_INTERVAL = 2      # Seconds between auto-refresh
 DASHBOARD_CHART_HISTORY_HOURS = 24   # Hours of data to show in charts
 
@@ -175,7 +176,8 @@ def get_config_dict():
             'database_path': LOGGING_DATABASE_PATH,
             'log_interval': LOGGING_INTERVAL,
             'csv_export_dir': LOGGING_CSV_EXPORT_DIR,
-            'max_db_size_mb': LOGGING_MAX_DB_SIZE_MB
+            'max_db_size_mb': LOGGING_MAX_DB_SIZE_MB,
+            'clear_on_startup': LOGGING_CLEAR_ON_STARTUP
         },
         'dashboard': {
             'enabled': DASHBOARD_ENABLED,

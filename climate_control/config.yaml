@@ -4,7 +4,7 @@
 sensor:
   i2c_address: 0x44  # SHT35-DIS-B I2C address (0x44 or 0x45)
   i2c_bus: 1  # I2C bus number
-  read_interval: 2.0  # Seconds between sensor readings
+  read_interval: 180.0  # Seconds between sensor readings
   
 # Target Environmental Conditions
 # Optimized for Mango Storage: 50-54°F (10-12.2°C), 85-90% RH

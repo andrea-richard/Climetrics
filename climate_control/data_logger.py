@@ -36,12 +36,17 @@ class DataLogger:
         self.db_path = logging_config.get('database_path', 'climate_data.db')
         self.csv_export_dir = logging_config.get('csv_export_dir', 'exports')
         self.max_db_size_mb = logging_config.get('max_db_size_mb', 100)
+        self.clear_on_startup = logging_config.get('clear_on_startup', False)
         
         self.conn = None
         self.cursor = None
         
         self._initialize_database()
         self._create_export_directory()
+        
+        # Clear database on startup if enabled (for development)
+        if self.clear_on_startup:
+            self._clear_database_on_startup()
     
     def _initialize_database(self):
         """Initialize SQLite database and create tables."""
@@ -127,6 +132,35 @@ class DataLogger:
         if not os.path.exists(self.csv_export_dir):
             os.makedirs(self.csv_export_dir)
             logger.info(f"Created export directory: {self.csv_export_dir}")
+    
+    def _clear_database_on_startup(self):
+        """Clear all data from database on startup (for development)."""
+        try:
+            # Get counts before clearing
+            self.cursor.execute("SELECT COUNT(*) FROM sensor_readings")
+            readings_count = self.cursor.fetchone()[0]
+            
+            self.cursor.execute("SELECT COUNT(*) FROM control_decisions")
+            decisions_count = self.cursor.fetchone()[0]
+            
+            self.cursor.execute("SELECT COUNT(*) FROM system_events")
+            events_count = self.cursor.fetchone()[0]
+            
+            # Clear all tables
+            self.cursor.execute("DELETE FROM sensor_readings")
+            self.cursor.execute("DELETE FROM control_decisions")
+            self.cursor.execute("DELETE FROM actuator_states")
+            self.cursor.execute("DELETE FROM system_events")
+            
+            self.conn.commit()
+            
+            logger.info(f"🗑️  Cleared database on startup: {readings_count} readings, "
+                       f"{decisions_count} decisions, {events_count} events removed")
+            logger.info("   (This is enabled for development - set LOGGING_CLEAR_ON_STARTUP = False to keep data)")
+            
+        except sqlite3.Error as e:
+            logger.warning(f"Failed to clear database on startup: {e}")
+            # Don't raise - continue with existing data
     
     def log_sensor_reading(self, temperature: float, humidity: float, 
                           temp_rate: Optional[float] = None,
